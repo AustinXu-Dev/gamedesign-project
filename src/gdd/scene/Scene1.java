@@ -4,6 +4,7 @@ import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
 import gdd.SpawnDetails;
+import gdd.powerup.MultiShot;
 import gdd.powerup.PowerUp;
 import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien1;
@@ -358,7 +359,7 @@ public class Scene1 extends JPanel {
             g.setFont(g.getFont().deriveFont(14f));
             g.drawString("Score: " + deaths, 10, 30);
             g.drawString("Speed: " + player.getSpeed(), 10, 50);
-            g.drawString("Shot Lv: " + shotLevel, 10, 70);
+            g.drawString("Shot Lv: " + player.getMultiShotLevel(), 10, 70);
             
             drawExplosions(g);
             drawPowreUps(g);
@@ -407,21 +408,16 @@ public class Scene1 extends JPanel {
             // Create a new enemy based on the spawn details
             switch (sd.type) {
                 case "Alien1":
-                    Enemy enemy = new Alien1(sd.x, sd.y);
-                    enemies.add(enemy);
-                    break;
-                // Add more cases for different enemy types if needed
-                case "Alien2":
-                    // Enemy enemy2 = new Alien2(sd.x, sd.y);
-                    // enemies.add(enemy2);
+                    enemies.add(new Alien1(sd.x, sd.y));
                     break;
                 case "PowerUp-SpeedUp":
-                    // Handle speed up item spawn
-                    PowerUp speedUp = new SpeedUp(sd.x, sd.y);
-                    powerups.add(speedUp);
+                    powerups.add(new SpeedUp(sd.x, sd.y));
+                    break;
+                case "PowerUp-MultiShot":
+                    powerups.add(new MultiShot(sd.x, sd.y));
                     break;
                 default:
-                    System.out.println("Unknown enemy type: " + sd.type);
+                    System.out.println("Unknown type: " + sd.type);
                     break;
             }
         }
@@ -597,11 +593,13 @@ public class Scene1 extends JPanel {
 
             if (key == KeyEvent.VK_SPACE && inGame) {
                 System.out.println("Shots: " + shots.size());
-                if (shots.size() < 4) {
-                    // Create a new shot and add it to the list
-                    Shot shot = new Shot(x, y);
-                    shots.add(shot);
+                if (key == KeyEvent.VK_SPACE && inGame) {
+                    if (shots.size() < player.getMultiShotLevel()) {
+                        Shot shot = new Shot(player.getX(), player.getY());
+                        shots.add(shot);
+                    }
                 }
+
             }
 
         }

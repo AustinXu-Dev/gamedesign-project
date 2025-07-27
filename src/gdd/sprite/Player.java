@@ -11,6 +11,9 @@ public class Player extends Sprite {
     private static final int START_X = 270;
     private static final int START_Y = 540;
     private int currentSpeed = 2;
+    private int multiShotLevel = 1;
+    private final int MAX_SHOTS = 4;
+
 
     private Rectangle bounds = new Rectangle(175,135,17,32);
 
@@ -73,4 +76,14 @@ public class Player extends Sprite {
             dx = 0;
         }
     }
+    public void increaseMultiShot() {
+        if (multiShotLevel < MAX_SHOTS) {
+            multiShotLevel++;
+        }
+    }
+
+    public int getMultiShotLevel() {
+        return multiShotLevel;
+    }
+
 }
