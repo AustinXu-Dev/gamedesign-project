@@ -8,6 +8,8 @@ import gdd.powerup.MultiShot;
 import gdd.powerup.PowerUp;
 import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien1;
+import gdd.sprite.Alien2;
+import gdd.sprite.Alien3;
 import gdd.sprite.Enemy;
 import gdd.sprite.Explosion;
 import gdd.sprite.Player;
@@ -409,6 +411,12 @@ public class Scene1 extends JPanel {
             switch (sd.type) {
                 case "Alien1":
                     enemies.add(new Alien1(sd.x, sd.y));
+                    break;
+                case "Alien2":
+                    enemies.add(new Alien2(sd.x, sd.y));
+                    break;
+                case "Alien3":
+                    enemies.add(new Alien3(sd.x, sd.y));
                     break;
                 case "PowerUp-SpeedUp":
                     powerups.add(new SpeedUp(sd.x, sd.y));

@@ -4,11 +4,11 @@ import static gdd.Global.*;
 import javax.swing.ImageIcon;
 import java.awt.Image;
 
-public class Alien1 extends Enemy {
+public class Alien3 extends Enemy {
 
     private Bomb bomb;
 
-    public Alien1(int x, int y) {
+    public Alien3(int x, int y) {
         super(x, y);
         initEnemy(x, y);
     }
@@ -19,7 +19,7 @@ public class Alien1 extends Enemy {
 
         bomb = new Bomb(x, y);
 
-        ImageIcon ii = new ImageIcon(IMG_ENEMY0);
+        ImageIcon ii = new ImageIcon(IMG_ENEMY2);
 
         // Scale to fixed size (adjust as needed)
         Image scaledImage = ii.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
