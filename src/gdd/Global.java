@@ -29,7 +29,9 @@ public class Global {
     public static final int PLAYER_HEIGHT = 20; // Doubled from 10
 
     // Images
-    public static final String IMG_ENEMY = "src/images/alien.png";
+    public static final String IMG_ENEMY0 = "src/images/alien0.png";
+    public static final String IMG_ENEMY1 = "src/images/alien1.png";
+    public static final String IMG_ENEMY2 = "src/images/alien2.png";
     public static final String IMG_PLAYER = "src/images/player.png";
     public static final String IMG_SHOT = "src/images/shot.png";
     public static final String IMG_EXPLOSION = "src/images/explosion.png";

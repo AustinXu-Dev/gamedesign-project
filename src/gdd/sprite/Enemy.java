@@ -19,7 +19,7 @@ public class Enemy extends Sprite {
 
         // bomb = new Bomb(x, y);
 
-        var ii = new ImageIcon(IMG_ENEMY);
+        var ii = new ImageIcon(IMG_ENEMY0);
 
         // Scale the image to use the global scaling factor
         var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
