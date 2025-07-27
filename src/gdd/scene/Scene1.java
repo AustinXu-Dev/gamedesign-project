@@ -27,6 +27,10 @@ import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 
 public class Scene1 extends JPanel {
 
@@ -110,20 +114,32 @@ public class Scene1 extends JPanel {
     }
 
     private void loadSpawnDetails() {
-        // TODO load this from a file
-        spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
-        spawnMap.put(200, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(300, new SpawnDetails("Alien1", 300, 0));
+        spawnMap.clear();
 
-        spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
-        spawnMap.put(401, new SpawnDetails("Alien1", 450, 0));
-        spawnMap.put(402, new SpawnDetails("Alien1", 500, 0));
-        spawnMap.put(403, new SpawnDetails("Alien1", 550, 0));
+        String fileName = "src/levels/stage" + stage + ".csv";
 
-        spawnMap.put(500, new SpawnDetails("Alien1", 100, 0));
-        spawnMap.put(501, new SpawnDetails("Alien1", 150, 0));
-        spawnMap.put(502, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(503, new SpawnDetails("Alien1", 350, 0));
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            boolean firstLine = true;
+
+            while ((line = br.readLine()) != null) {
+                if (firstLine) { firstLine = false; continue; } // skip header
+
+                String[] parts = line.split(",");
+
+                if (parts.length < 4) continue;
+
+                int frame = Integer.parseInt(parts[0]);
+                String type = parts[1];
+                int x = Integer.parseInt(parts[2]);
+                int y = Integer.parseInt(parts[3]);
+
+                spawnMap.put(frame, new SpawnDetails(type, x, y));
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error loading CSV: " + e.getMessage());
+        }
     }
 
     private void initBoard() {
