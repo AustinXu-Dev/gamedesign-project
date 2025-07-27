@@ -2,7 +2,7 @@ package gdd.sprite;
 
 import java.awt.Image;
 
-abstract public class Sprite {
+public class Sprite {
 
     protected boolean visible;
     protected Image image;
@@ -17,7 +17,7 @@ abstract public class Sprite {
         visible = true;
     }
 
-    abstract public void act();
+    public void act();
 
     public boolean collidesWith(Sprite other) {
         if (other == null || !this.isVisible() || !other.isVisible()) {

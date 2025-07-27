@@ -4,12 +4,12 @@ import static gdd.Global.*;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
+import java.awt.Image;
 
 public class Player extends Sprite {
 
     private static final int START_X = 270;
     private static final int START_Y = 540;
-    private int width;
     private int currentSpeed = 2;
 
     private Rectangle bounds = new Rectangle(175,135,17,32);
@@ -19,14 +19,12 @@ public class Player extends Sprite {
     }
 
     private void initPlayer() {
-        var ii = new ImageIcon(IMG_PLAYER);
+        ImageIcon ii = new ImageIcon(IMG_PLAYER);
 
-        // Scale the image to use the global scaling factor
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-                ii.getIconHeight() * SCALE_FACTOR,
-                java.awt.Image.SCALE_SMOOTH);
+        // Scale to fixed 40x40 pixels regardless of original image size
+        Image scaledImage = ii.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+
         setImage(scaledImage);
-
         setX(START_X);
         setY(START_Y);
     }
@@ -50,8 +48,9 @@ public class Player extends Sprite {
             x = 2;
         }
 
-        if (x >= BOARD_WIDTH - 2 * width) {
-            x = BOARD_WIDTH - 2 * width;
+        // Limit movement to board width
+        if (x >= BOARD_WIDTH - getImage().getWidth(null)) {
+            x = BOARD_WIDTH - getImage().getWidth(null);
         }
     }
 
@@ -70,11 +69,7 @@ public class Player extends Sprite {
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
 
-        if (key == KeyEvent.VK_LEFT) {
-            dx = 0;
-        }
-
-        if (key == KeyEvent.VK_RIGHT) {
+        if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_RIGHT) {
             dx = 0;
         }
     }
