@@ -4,6 +4,7 @@ import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
 import gdd.SpawnDetails;
+import gdd.powerup.MultiShot;
 import gdd.powerup.PowerUp;
 import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien1;
@@ -27,6 +28,10 @@ import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 
 public class Scene1 extends JPanel {
 
@@ -110,20 +115,32 @@ public class Scene1 extends JPanel {
     }
 
     private void loadSpawnDetails() {
-        // TODO load this from a file
-        spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
-        spawnMap.put(200, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(300, new SpawnDetails("Alien1", 300, 0));
+        spawnMap.clear();
 
-        spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
-        spawnMap.put(401, new SpawnDetails("Alien1", 450, 0));
-        spawnMap.put(402, new SpawnDetails("Alien1", 500, 0));
-        spawnMap.put(403, new SpawnDetails("Alien1", 550, 0));
+        String fileName = "src/levels/stage" + stage + ".csv";
 
-        spawnMap.put(500, new SpawnDetails("Alien1", 100, 0));
-        spawnMap.put(501, new SpawnDetails("Alien1", 150, 0));
-        spawnMap.put(502, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(503, new SpawnDetails("Alien1", 350, 0));
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            boolean firstLine = true;
+
+            while ((line = br.readLine()) != null) {
+                if (firstLine) { firstLine = false; continue; } // skip header
+
+                String[] parts = line.split(",");
+
+                if (parts.length < 4) continue;
+
+                int frame = Integer.parseInt(parts[0]);
+                String type = parts[1];
+                int x = Integer.parseInt(parts[2]);
+                int y = Integer.parseInt(parts[3]);
+
+                spawnMap.put(frame, new SpawnDetails(type, x, y));
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error loading CSV: " + e.getMessage());
+        }
     }
 
     private void initBoard() {
@@ -342,7 +359,7 @@ public class Scene1 extends JPanel {
             g.setFont(g.getFont().deriveFont(14f));
             g.drawString("Score: " + deaths, 10, 30);
             g.drawString("Speed: " + player.getSpeed(), 10, 50);
-            g.drawString("Shot Lv: " + shotLevel, 10, 70);
+            g.drawString("Shot Lv: " + player.getMultiShotLevel(), 10, 70);
             
             drawExplosions(g);
             drawPowreUps(g);
@@ -391,21 +408,16 @@ public class Scene1 extends JPanel {
             // Create a new enemy based on the spawn details
             switch (sd.type) {
                 case "Alien1":
-                    Enemy enemy = new Alien1(sd.x, sd.y);
-                    enemies.add(enemy);
-                    break;
-                // Add more cases for different enemy types if needed
-                case "Alien2":
-                    // Enemy enemy2 = new Alien2(sd.x, sd.y);
-                    // enemies.add(enemy2);
+                    enemies.add(new Alien1(sd.x, sd.y));
                     break;
                 case "PowerUp-SpeedUp":
-                    // Handle speed up item spawn
-                    PowerUp speedUp = new SpeedUp(sd.x, sd.y);
-                    powerups.add(speedUp);
+                    powerups.add(new SpeedUp(sd.x, sd.y));
+                    break;
+                case "PowerUp-MultiShot":
+                    powerups.add(new MultiShot(sd.x, sd.y));
                     break;
                 default:
-                    System.out.println("Unknown enemy type: " + sd.type);
+                    System.out.println("Unknown type: " + sd.type);
                     break;
             }
         }
@@ -581,11 +593,13 @@ public class Scene1 extends JPanel {
 
             if (key == KeyEvent.VK_SPACE && inGame) {
                 System.out.println("Shots: " + shots.size());
-                if (shots.size() < 4) {
-                    // Create a new shot and add it to the list
-                    Shot shot = new Shot(x, y);
-                    shots.add(shot);
+                if (key == KeyEvent.VK_SPACE && inGame) {
+                    if (shots.size() < player.getMultiShotLevel()) {
+                        Shot shot = new Shot(player.getX(), player.getY());
+                        shots.add(shot);
+                    }
                 }
+
             }
 
         }
