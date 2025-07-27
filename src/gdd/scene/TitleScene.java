@@ -72,25 +72,37 @@ public class TitleScene extends JPanel {
         super.paintComponent(g);
         doDrawing(g);
     }
+   
 
     private void doDrawing(Graphics g) {
-        g.setColor(Color.black);
+        g.setColor(new Color(2,22,49));
         g.fillRect(0, 0, d.width, d.height);
+        // Scale the title image to fit better (80% width)
+        int imgWidth = (int)(d.width * 0.8);
+        int imgHeight = (int)(d.height * 0.5);
+        int imgX = (d.width - imgWidth) / 2;
+        int imgY = 20;
+        g.drawImage(image, imgX, imgY, imgWidth, imgHeight, this);
 
-        g.drawImage(image, 0, -80, d.width, d.height, this);
 
-        // Flashing "Press SPACE to Start"
-        g.setFont(new Font("Helvetica", Font.BOLD, 32));
-        g.setColor((frame % 60 < 30) ? Color.red : Color.white);
-        String text = "Press SPACE to Start";
+
+        
                 // Team Member Names
         g.setFont(new Font("Helvetica", Font.PLAIN, 18));
         g.setColor(Color.white);
+        int teamStartY = imgY + imgHeight + 20;
         g.drawString("Team Members:", 50, 540);
         g.drawString("Pyae Phyo Aung - 6530069", 70, 565);
         g.drawString("Phyu Thandar Khin - 6520271", 70, 590);
-        int textX = (d.width - g.getFontMetrics().stringWidth(text)) / 2;
-        g.drawString(text, textX, 600);
+       
+
+
+        // Flashing "Press SPACE to Start"
+        String text = "Press SPACE to Start";
+        g.setFont(new Font("Helvetica", Font.BOLD, 32));
+        g.setColor((frame % 60 < 30) ? Color.red : Color.white);
+        int textX = (d.width - g.getFontMetrics().stringWidth(text)) /2;
+        g.drawString(text, textX, teamStartY + 110);
 
 
         // Footer credit
