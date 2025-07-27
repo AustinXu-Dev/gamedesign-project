@@ -151,7 +151,7 @@ public class Scene1 extends JPanel {
         addKeyListener(new TAdapter());
         setFocusable(true);
         requestFocusInWindow();
-        setBackground(Color.black);
+        setBackground(new Color(2,22,49));
 
         timer = new Timer(1000 / 60, new GameCycle());
         timer.start();
@@ -343,7 +343,7 @@ public class Scene1 extends JPanel {
 
     private void doDrawing(Graphics g) {
 
-        g.setColor(Color.black);
+        g.setColor(new Color(2,22,49));
         g.fillRect(0, 0, d.width, d.height);
 
         g.setColor(Color.white);
