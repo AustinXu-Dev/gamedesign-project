@@ -105,10 +105,7 @@ public class TitleScene extends JPanel {
         g.drawString(text, textX, teamStartY + 110);
 
 
-        // Footer credit
-        g.setFont(new Font("Helvetica", Font.PLAIN, 10));
-        g.setColor(Color.gray);
-        g.drawString("Game by Chayapol", 10, 650);
+       
 
         Toolkit.getDefaultToolkit().sync();
     }
