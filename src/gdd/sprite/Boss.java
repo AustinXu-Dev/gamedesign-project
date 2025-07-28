@@ -7,7 +7,7 @@ import java.awt.Image;
 
 public class Boss extends Enemy {
 
-    private int health = 20;
+    private int health = 10;
 
     public Boss(int x, int y) {
         super(x, y); // ✅ FIX: Call the Enemy constructor
@@ -26,13 +26,15 @@ public class Boss extends Enemy {
     }
 
     public void takeHit() {
-        health--;
-        if (health <= 0) {
-            this.setDying(true);
-        }
+        health--; // must decrement
+        System.out.println("Boss HP: " + health);
     }
 
     public boolean isDead() {
         return health <= 0;
     }
+    public int getHealth() {
+        return health;
+    }
+
 }

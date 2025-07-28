@@ -20,14 +20,12 @@ public class Alien1 extends Enemy {
         bomb = new Bomb(x, y);
 
         ImageIcon ii = new ImageIcon(IMG_ENEMY0);
-
-        // Scale to fixed size (adjust as needed)
         Image scaledImage = ii.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
         setImage(scaledImage);
     }
 
     public void act(int direction) {
-        this.y++; // Or use this.x += direction if horizontal scroll is needed
+        this.x += direction; // group horizontal movement
     }
 
     public Bomb getBomb() {
@@ -49,7 +47,7 @@ public class Alien1 extends Enemy {
 
             String bombImg = "src/images/bomb.png";
             ImageIcon ii = new ImageIcon(bombImg);
-            Image scaledBomb = ii.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH); // optional scaling
+            Image scaledBomb = ii.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
             setImage(scaledBomb);
         }
 
@@ -60,5 +58,12 @@ public class Alien1 extends Enemy {
         public boolean isDestroyed() {
             return destroyed;
         }
+
+        public void act() {
+            if (!destroyed) {
+                this.y += 2; // slower and more consistent than 1/frame
+            }
+        }
     }
+
 }
