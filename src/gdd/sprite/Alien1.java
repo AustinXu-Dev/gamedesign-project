@@ -47,7 +47,7 @@ public class Alien1 extends Enemy {
 
             String bombImg = "src/images/bomb.png";
             ImageIcon ii = new ImageIcon(bombImg);
-            Image scaledBomb = ii.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            Image scaledBomb = ii.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
             setImage(scaledBomb);
         }
 
