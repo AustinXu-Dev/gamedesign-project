@@ -4,25 +4,20 @@ import static gdd.Global.*;
 import gdd.sprite.Player;
 import javax.swing.ImageIcon;
 import java.awt.Image;
+import gdd.sprite.Player;
+import javax.swing.ImageIcon;
 
 public class MultiShot extends PowerUp {
 
     public MultiShot(int x, int y) {
-        super(x, y);
-
-        ImageIcon ii = new ImageIcon(IMG_POWERUP_MULTISHOT); // You need to add this image!
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() ,
-                ii.getIconHeight() ,
-                java.awt.Image.SCALE_SMOOTH);
-        setImage(scaledImage);
+        this.x = x;
+        this.y = y;
+        this.image = new ImageIcon(IMG_POWERUP_MULTISHOT).getImage();
     }
 
-    public void act() {
-        this.y += 2; // Move down
-    }
-
+    @Override
     public void upgrade(Player player) {
-        player.increaseMultiShot(); // We'll add this method in Player
-        this.die();
+        player.upgradeMultiShot();
+        this.setDying(true);
     }
 }

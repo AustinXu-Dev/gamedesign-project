@@ -12,7 +12,7 @@ public class Player extends Sprite {
     private static final int START_Y = 540;
     private int currentSpeed = 2;
     private int multiShotLevel = 1;
-    private final int MAX_SHOTS = 4;
+    private final int MAX_SHOTS = 3;
 
 
     private Rectangle bounds = new Rectangle(175,135,17,32);
@@ -42,6 +42,12 @@ public class Player extends Sprite {
         }
         this.currentSpeed = speed;
         return currentSpeed;
+    }
+
+    public void increaseSpeed() {
+        if (currentSpeed < 8) { // You can adjust the max limit as you want
+            currentSpeed++;
+        }
     }
 
     public void act() {
@@ -76,7 +82,7 @@ public class Player extends Sprite {
             dx = 0;
         }
     }
-    public void increaseMultiShot() {
+    public void upgradeMultiShot() {
         if (multiShotLevel < MAX_SHOTS) {
             multiShotLevel++;
         }

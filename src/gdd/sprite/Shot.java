@@ -17,16 +17,13 @@ public class Shot extends Sprite {
     }
 
     private void initShot(int x, int y) {
-
         var ii = new ImageIcon(IMG_SHOT);
 
-        // Scale the image to use the global scaling factor
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-                ii.getIconHeight() * SCALE_FACTOR, 
-                java.awt.Image.SCALE_SMOOTH);
+        var scaledImage = ii.getImage().getScaledInstance(8, 16, java.awt.Image.SCALE_SMOOTH);
         setImage(scaledImage);
 
         setX(x + H_SPACE);
         setY(y - V_SPACE);
     }
+
 }

@@ -2,6 +2,8 @@ frame,type,x,y
 50,Alien2,121,0
 183,Alien3,255,0
 268,Alien1,192,0
+250,PowerUp-SpeedUp,150,0
+400,PowerUp-MultiShot,200,0
 446,Alien2,263,0
 500,Alien1,90,0
 500,Alien2,130,0

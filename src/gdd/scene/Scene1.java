@@ -10,6 +10,7 @@ import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien1;
 import gdd.sprite.Alien2;
 import gdd.sprite.Alien3;
+import gdd.sprite.Boss;
 import gdd.sprite.Enemy;
 import gdd.sprite.Explosion;
 import gdd.sprite.Player;
@@ -41,10 +42,15 @@ public class Scene1 extends JPanel {
     private int frame = 0;
     private List<PowerUp> powerups;
     private List<Enemy> enemies;
+    private List<Alien1.Bomb> bombs;
     private List<Explosion> explosions;
     private List<Shot> shots;
     private Player player;
+    private Boss bossEnemy = null;
     // private Shot shot;
+
+    private int bombDropTick = 0;
+    private final int BOMB_DROP_INTERVAL = 90; // drop every 90 frames (1.5 sec at 60fps)
 
     final int BLOCKHEIGHT = 50;
     final int BLOCKWIDTH = 50;
@@ -176,6 +182,7 @@ public class Scene1 extends JPanel {
     private void gameInit() {
 
         enemies = new ArrayList<>();
+        bombs = new ArrayList<>();
         powerups = new ArrayList<>();
         explosions = new ArrayList<>();
         shots = new ArrayList<>();
@@ -268,7 +275,7 @@ public class Scene1 extends JPanel {
         }
     }
 
-    private void drawPowreUps(Graphics g) {
+    private void drawPowerUps(Graphics g) {
 
         for (PowerUp p : powerups) {
 
@@ -309,14 +316,13 @@ public class Scene1 extends JPanel {
     }
 
     private void drawBombing(Graphics g) {
-
-        // for (Enemy e : enemies) {
-        //     Enemy.Bomb b = e.getBomb();
-        //     if (!b.isDestroyed()) {
-        //         g.drawImage(b.getImage(), b.getX(), b.getY(), this);
-        //     }
-        // }
+        for (Alien1.Bomb bomb : bombs) {
+            if (!bomb.isDestroyed()) {
+                g.drawImage(bomb.getImage(), bomb.getX(), bomb.getY(), this);
+            }
+        }
     }
+
 
     private void drawExplosions(Graphics g) {
 
@@ -354,22 +360,29 @@ public class Scene1 extends JPanel {
         g.setColor(Color.green);
 
         if (inGame) {
-             // declare shotLevel globally for now
+            drawMap(g);  // background
 
-            drawMap(g);  // Draw background stars first
+            // HUD
             g.setColor(Color.white);
             g.setFont(g.getFont().deriveFont(14f));
             g.drawString("Score: " + deaths, 10, 30);
             g.drawString("Speed: " + player.getSpeed(), 10, 50);
             g.drawString("Shot Lv: " + player.getMultiShotLevel(), 10, 70);
-            
+
+            if (bossEnemy != null && bossEnemy.isVisible()) {
+                g.setColor(Color.red);
+                g.drawString("Boss HP: " + bossEnemy.getHealth(), 10, 90);
+            }
+
+
             drawExplosions(g);
-            drawPowreUps(g);
+            drawPowerUps(g);
             drawAliens(g);
             drawPlayer(g);
             drawShot(g);
-
-        } else {
+            drawBombing(g);
+        }
+        else {
 
             if (timer.isRunning()) {
                 timer.stop();
@@ -396,18 +409,14 @@ public class Scene1 extends JPanel {
 
         g.setColor(Color.white);
         g.setFont(small);
-        g.drawString(message, (BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2,
-                BOARD_WIDTH / 2);
+        g.drawString(message, (BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2, BOARD_WIDTH / 2);
     }
 
     private void update() {
 
-
-        // Check enemy spawn
-        // TODO this approach can only spawn one enemy at a frame
+        // Spawn logic
         SpawnDetails sd = spawnMap.get(frame);
         if (sd != null) {
-            // Create a new enemy based on the spawn details
             switch (sd.type) {
                 case "Alien1":
                     enemies.add(new Alien1(sd.x, sd.y));
@@ -424,151 +433,160 @@ public class Scene1 extends JPanel {
                 case "PowerUp-MultiShot":
                     powerups.add(new MultiShot(sd.x, sd.y));
                     break;
-                default:
-                    System.out.println("Unknown type: " + sd.type);
+                case "Boss":
+                    Boss boss = new Boss(sd.x, sd.y);
+                    enemies.add(boss);
+                    bossEnemy = boss;
                     break;
             }
         }
 
+        // Stage transition
         if (deaths == NUMBER_OF_ALIENS_TO_DESTROY) {
             inGame = false;
             timer.stop();
-            message = "Game won!";
+            if (stage == 1) {
+                message = "Stage 1 Complete!";
+                Timer transitionTimer = new Timer(2000, e -> game.loadScene3());
+                transitionTimer.setRepeats(false);
+                transitionTimer.start();
+            } else {
+                message = "Game Won!";
+            }
         }
 
-        // player
+        // Player
         player.act();
 
-        // Power-ups
-        for (PowerUp powerup : powerups) {
-            if (powerup.isVisible()) {
-                powerup.act();
-                if (powerup.collidesWith(player)) {
-                    powerup.upgrade(player);
+        // PowerUps
+        for (PowerUp p : powerups) {
+            if (p.isVisible()) {
+                p.act();
+                if (p.collidesWith(player)) {
+                    p.upgrade(player);
                 }
             }
         }
 
-        // Enemies
-        for (Enemy enemy : enemies) {
-            if (enemy.isVisible()) {
-                enemy.act(direction);
-            }
-        }
-
-        // shot
-        List<Shot> shotsToRemove = new ArrayList<>();
-        for (Shot shot : shots) {
-
-            if (shot.isVisible()) {
-                int shotX = shot.getX();
-                int shotY = shot.getY();
-
-                for (Enemy enemy : enemies) {
-                    // Collision detection: shot and enemy
-                    int enemyX = enemy.getX();
-                    int enemyY = enemy.getY();
-
-                    if (enemy.isVisible() && shot.isVisible()
-                            && shotX >= (enemyX)
-                            && shotX <= (enemyX + ALIEN_WIDTH)
-                            && shotY >= (enemyY)
-                            && shotY <= (enemyY + ALIEN_HEIGHT)) {
-
-                        var ii = new ImageIcon(IMG_EXPLOSION);
-                        enemy.setImage(ii.getImage());
-                        enemy.setDying(true);
-                        explosions.add(new Explosion(enemyX, enemyY));
-                        deaths++;
-                        shot.die();
-                        shotsToRemove.add(shot);
-                    }
-                }
-
-                int y = shot.getY();
-                // y -= 4;
-                y -= 20;
-
-                if (y < 0) {
-                    shot.die();
-                    shotsToRemove.add(shot);
-                } else {
-                    shot.setY(y);
+        // Enemy group edge check
+        boolean edgeReached = false;
+        for (Enemy e : enemies) {
+            if (e.isVisible()) {
+                int x = e.getX();
+                if ((direction == 1 && x >= BOARD_WIDTH - ALIEN_WIDTH - 2) ||
+                    (direction == -1 && x <= 2)) {
+                    edgeReached = true;
+                    break;
                 }
             }
         }
-        shots.removeAll(shotsToRemove);
-
-        // enemies
-        // for (Enemy enemy : enemies) {
-        //     int x = enemy.getX();
-        //     if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
-        //         direction = -1;
-        //         for (Enemy e2 : enemies) {
-        //             e2.setY(e2.getY() + GO_DOWN);
-        //         }
-        //     }
-        //     if (x <= BORDER_LEFT && direction != 1) {
-        //         direction = 1;
-        //         for (Enemy e : enemies) {
-        //             e.setY(e.getY() + GO_DOWN);
-        //         }
-        //     }
-        // }
-        // for (Enemy enemy : enemies) {
-        //     if (enemy.isVisible()) {
-        //         int y = enemy.getY();
-        //         if (y > GROUND - ALIEN_HEIGHT) {
-        //             inGame = false;
-        //             message = "Invasion!";
-        //         }
-        //         enemy.act(direction);
-        //     }
-        // }
-        // bombs - collision detection
-        // Bomb is with enemy, so it loops over enemies
-        /*
-        for (Enemy enemy : enemies) {
-
-            int chance = randomizer.nextInt(15);
-            Enemy.Bomb bomb = enemy.getBomb();
-
-            if (chance == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
-
-                bomb.setDestroyed(false);
-                bomb.setX(enemy.getX());
-                bomb.setY(enemy.getY());
+        if (edgeReached) {
+            direction *= -1;
+            for (Enemy e : enemies) {
+                e.setY(e.getY() + ALIEN_HEIGHT);
             }
+        }
 
-            int bombX = bomb.getX();
-            int bombY = bomb.getY();
-            int playerX = player.getX();
-            int playerY = player.getY();
-
-            if (player.isVisible() && !bomb.isDestroyed()
-                    && bombX >= (playerX)
-                    && bombX <= (playerX + PLAYER_WIDTH)
-                    && bombY >= (playerY)
-                    && bombY <= (playerY + PLAYER_HEIGHT)) {
-
-                var ii = new ImageIcon(IMG_EXPLOSION);
-                player.setImage(ii.getImage());
-                player.setDying(true);
-                bomb.setDestroyed(true);
+        // Enemy act
+        for (Enemy e : enemies) {
+            if (e.isVisible()) {
+                e.act(direction);
             }
+        }
 
+        // 🎯 Bomb drop logic (spread and synced)
+        if (bombDropTick >= BOMB_DROP_INTERVAL) {
+            bombDropTick = 0;
+            List<Alien1> aliens = enemies.stream()
+                .filter(e -> e instanceof Alien1 && e.isVisible())
+                .map(e -> (Alien1) e)
+                .toList();
+
+            if (!aliens.isEmpty()) {
+                Alien1 randomAlien = aliens.get(randomizer.nextInt(aliens.size()));
+                Alien1.Bomb bomb = randomAlien.getBomb();
+
+                if (bomb.isDestroyed()) {
+                    bomb.setDestroyed(false);
+                    bomb.setX(randomAlien.getX() + 8);
+                    bomb.setY(randomAlien.getY() + 16);
+                    bombs.add(bomb);
+                }
+            }
+        }
+
+        // 💣 Bombs move
+        for (Alien1.Bomb bomb : bombs) {
             if (!bomb.isDestroyed()) {
                 bomb.setY(bomb.getY() + 1);
+
                 if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
+                    bomb.setDestroyed(true);
+                    continue;
+                }
+
+                int bx = bomb.getX(), by = bomb.getY();
+                int px = player.getX(), py = player.getY();
+
+                if (player.isVisible() && bx >= px && bx <= px + PLAYER_WIDTH
+                        && by >= py && by <= py + PLAYER_HEIGHT) {
+                    var ii = new ImageIcon(IMG_EXPLOSION);
+                    player.setImage(ii.getImage());
+                    player.setDying(true);
                     bomb.setDestroyed(true);
                 }
             }
         }
-         */
+
+        // 🔫 Shot logic
+        List<Shot> toRemove = new ArrayList<>();
+        for (Shot shot : shots) {
+            if (shot.isVisible()) {
+                int sx = shot.getX();
+                int sy = shot.getY();
+
+                for (Enemy enemy : enemies) {
+                    int ex = enemy.getX();
+                    int ey = enemy.getY();
+
+                    if (enemy.isVisible() && sx >= ex && sx <= ex + (enemy instanceof Boss ? 80 : ALIEN_WIDTH)
+                            && sy >= ey && sy <= ey + (enemy instanceof Boss ? 80 : ALIEN_HEIGHT)) {
+
+                        if (enemy instanceof Boss b) {
+                            b.takeHit();
+                            if (b.isDead()) {
+                                var ii = new ImageIcon(IMG_EXPLOSION);
+                                b.setImage(ii.getImage());
+                                b.setDying(true);
+                                explosions.add(new Explosion(ex, ey));
+                                deaths++;
+                            }
+                        } else {
+                            var ii = new ImageIcon(IMG_EXPLOSION);
+                            enemy.setImage(ii.getImage());
+                            enemy.setDying(true);
+                            explosions.add(new Explosion(ex, ey));
+                            deaths++;
+                        }
+
+                        shot.die();
+                        toRemove.add(shot);
+                    }
+                }
+
+                shot.setY(shot.getY() - 20);
+                if (shot.getY() < 0) {
+                    shot.die();
+                    toRemove.add(shot);
+                }
+            }
+        }
+        shots.removeAll(toRemove);
     }
 
     private void doGameCycle() {
         frame++;
+        bombDropTick++;
         update();
         repaint();
     }
