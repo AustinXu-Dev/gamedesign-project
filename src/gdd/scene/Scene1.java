@@ -10,6 +10,7 @@ import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien1;
 import gdd.sprite.Alien2;
 import gdd.sprite.Alien3;
+import gdd.sprite.Boss;
 import gdd.sprite.Enemy;
 import gdd.sprite.Explosion;
 import gdd.sprite.Player;
@@ -41,6 +42,7 @@ public class Scene1 extends JPanel {
     private int frame = 0;
     private List<PowerUp> powerups;
     private List<Enemy> enemies;
+    private List<Alien1.Bomb> bombs;
     private List<Explosion> explosions;
     private List<Shot> shots;
     private Player player;
@@ -176,6 +178,7 @@ public class Scene1 extends JPanel {
     private void gameInit() {
 
         enemies = new ArrayList<>();
+        bombs = new ArrayList<>();
         powerups = new ArrayList<>();
         explosions = new ArrayList<>();
         shots = new ArrayList<>();
@@ -309,14 +312,13 @@ public class Scene1 extends JPanel {
     }
 
     private void drawBombing(Graphics g) {
-
-        // for (Enemy e : enemies) {
-        //     Enemy.Bomb b = e.getBomb();
-        //     if (!b.isDestroyed()) {
-        //         g.drawImage(b.getImage(), b.getX(), b.getY(), this);
-        //     }
-        // }
+        for (Alien1.Bomb bomb : bombs) {
+            if (!bomb.isDestroyed()) {
+                g.drawImage(bomb.getImage(), bomb.getX(), bomb.getY(), this);
+            }
+        }
     }
+
 
     private void drawExplosions(Graphics g) {
 
@@ -368,6 +370,7 @@ public class Scene1 extends JPanel {
             drawAliens(g);
             drawPlayer(g);
             drawShot(g);
+            drawBombing(g);
 
         } else {
 
@@ -396,8 +399,7 @@ public class Scene1 extends JPanel {
 
         g.setColor(Color.white);
         g.setFont(small);
-        g.drawString(message, (BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2,
-                BOARD_WIDTH / 2);
+        g.drawString(message, (BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2, BOARD_WIDTH / 2);
     }
 
     private void update() {
@@ -424,6 +426,10 @@ public class Scene1 extends JPanel {
                 case "PowerUp-MultiShot":
                     powerups.add(new MultiShot(sd.x, sd.y));
                     break;
+                case "Boss":
+                    Boss boss = new Boss(sd.x, sd.y);
+                    enemies.add(boss); // You may keep in same list or separate if needed
+                    break;
                 default:
                     System.out.println("Unknown type: " + sd.type);
                     break;
@@ -433,7 +439,16 @@ public class Scene1 extends JPanel {
         if (deaths == NUMBER_OF_ALIENS_TO_DESTROY) {
             inGame = false;
             timer.stop();
-            message = "Game won!";
+
+            if (stage == 1) {
+                message = "Stage 1 Complete!";
+                // Delay, then load stage 2
+                Timer transitionTimer = new Timer(2000, e -> game.loadScene3());
+                transitionTimer.setRepeats(false);
+                transitionTimer.start();
+            } else {
+                message = "Game Won!";
+            }
         }
 
         // player
@@ -453,8 +468,56 @@ public class Scene1 extends JPanel {
         for (Enemy enemy : enemies) {
             if (enemy.isVisible()) {
                 enemy.act(direction);
+
+                // 💣 Bomb logic for Alien1 enemies only
+                if (enemy instanceof Alien1) {
+                    Alien1 alien = (Alien1) enemy;
+
+                    int chance = randomizer.nextInt(15); // adjust for difficulty
+                    Alien1.Bomb bomb = alien.getBomb();
+
+                    if (chance == CHANCE && bomb.isDestroyed()) {
+                        bomb.setDestroyed(false);
+                        bomb.setX(alien.getX());
+                        bomb.setY(alien.getY());
+                        bombs.add(bomb);
+                    }
+                }
             }
         }
+        
+        for (Alien1.Bomb bomb : bombs) {
+            if (!bomb.isDestroyed()) {
+
+                // Move the bomb downward
+                bomb.setY(bomb.getY() + 1);
+
+                // If it hits the ground, mark as destroyed
+                if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
+                    bomb.setDestroyed(true);
+                    continue;
+                }
+
+                // Check collision with player
+                int bombX = bomb.getX();
+                int bombY = bomb.getY();
+                int playerX = player.getX();
+                int playerY = player.getY();
+
+                if (player.isVisible()
+                        && bombX >= playerX
+                        && bombX <= playerX + PLAYER_WIDTH
+                        && bombY >= playerY
+                        && bombY <= playerY + PLAYER_HEIGHT) {
+
+                    var ii = new ImageIcon(IMG_EXPLOSION);
+                    player.setImage(ii.getImage());
+                    player.setDying(true);
+                    bomb.setDestroyed(true);
+                }
+            }
+        }
+
 
         // shot
         List<Shot> shotsToRemove = new ArrayList<>();
@@ -498,73 +561,6 @@ public class Scene1 extends JPanel {
             }
         }
         shots.removeAll(shotsToRemove);
-
-        // enemies
-        // for (Enemy enemy : enemies) {
-        //     int x = enemy.getX();
-        //     if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
-        //         direction = -1;
-        //         for (Enemy e2 : enemies) {
-        //             e2.setY(e2.getY() + GO_DOWN);
-        //         }
-        //     }
-        //     if (x <= BORDER_LEFT && direction != 1) {
-        //         direction = 1;
-        //         for (Enemy e : enemies) {
-        //             e.setY(e.getY() + GO_DOWN);
-        //         }
-        //     }
-        // }
-        // for (Enemy enemy : enemies) {
-        //     if (enemy.isVisible()) {
-        //         int y = enemy.getY();
-        //         if (y > GROUND - ALIEN_HEIGHT) {
-        //             inGame = false;
-        //             message = "Invasion!";
-        //         }
-        //         enemy.act(direction);
-        //     }
-        // }
-        // bombs - collision detection
-        // Bomb is with enemy, so it loops over enemies
-        /*
-        for (Enemy enemy : enemies) {
-
-            int chance = randomizer.nextInt(15);
-            Enemy.Bomb bomb = enemy.getBomb();
-
-            if (chance == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
-
-                bomb.setDestroyed(false);
-                bomb.setX(enemy.getX());
-                bomb.setY(enemy.getY());
-            }
-
-            int bombX = bomb.getX();
-            int bombY = bomb.getY();
-            int playerX = player.getX();
-            int playerY = player.getY();
-
-            if (player.isVisible() && !bomb.isDestroyed()
-                    && bombX >= (playerX)
-                    && bombX <= (playerX + PLAYER_WIDTH)
-                    && bombY >= (playerY)
-                    && bombY <= (playerY + PLAYER_HEIGHT)) {
-
-                var ii = new ImageIcon(IMG_EXPLOSION);
-                player.setImage(ii.getImage());
-                player.setDying(true);
-                bomb.setDestroyed(true);
-            }
-
-            if (!bomb.isDestroyed()) {
-                bomb.setY(bomb.getY() + 1);
-                if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
-                    bomb.setDestroyed(true);
-                }
-            }
-        }
-         */
     }
 
     private void doGameCycle() {
